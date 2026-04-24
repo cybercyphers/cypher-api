@@ -1,0 +1,22 @@
+{
+    "{
+name": "cypher-api",
+    "Developer": "Cyber Cyphers",
+    "version": "1.0.0",
+    "description": "An api web where developers meet and make things simple",
+    "web": "https://panel-cyphers.nett.to/cyphers/",
+    "main": "./Main/cyphers.js",
+    "scripts": {
+        "start": "node index.js",
+        "stop": "p kill index.js"
+    },
+    "type": "module",
+    "dependencies": {
+        "better-sqlite3": "^12.9.0",
+        "chalk": "^4.1.2",
+        "express": "^5.2.1",
+        "express-rate-limit": "^8.4.1",
+        "helmet": "^8.1.0",
+        "morgan": "^1.10.1"
+    }}
+}
