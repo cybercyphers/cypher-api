@@ -1,6 +1,6 @@
 {
-    "{
-name": "cypher-api",
+    
+"name": "cypher-api",
     "Developer": "Cyber Cyphers",
     "version": "1.0.0",
     "description": "An api web where developers meet and make things simple",
@@ -18,5 +18,5 @@ name": "cypher-api",
         "express-rate-limit": "^8.4.1",
         "helmet": "^8.1.0",
         "morgan": "^1.10.1"
-    }}
-}
+    }
+
