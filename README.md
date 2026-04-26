@@ -11,15 +11,7 @@
 
 ---
 ```
-apt install git
-```
-
-```
-git clone https://github.com/cybercyphers/cypher-api.git
-```
-```js
-const name = cyphers;
-console.log(name);
+updating soon
 ```
 
 ---
