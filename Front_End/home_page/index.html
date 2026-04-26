@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang ="en">
+ <head>  
+     <title>Welcome to Cypher-Api</title>
+     <meta property="og:name" content ="Cypher-api DashbBoard">
+     <meta property ="og:description" content ="Reliable api to make developers work faster and accurateâ˜‘"/>
+     <meta property ="og:image" content="https://panel-cyphers.nett.to/cyphers/cypher_prev"/>
+     <meta charset="utf-8"/>
+     <meta name="viewport"content="width=device-width, initial-scale=1.0"/> 
+     <meta property = "og:url" content = "https://panel-cyphers.nett.to/cyphers/"/>
+     <meta property ="og:type" content = "website"/>
+   <style>
+  <body.light{
+  background-color: white;
+  color : black;
+  transition: 0.1s ease;
+}
+body.dark{
+  background-color: #524949;
+  color: white;
+  transition:  0.1s ease;
+}
+
+body{
+  touch-action: manipulation;
+  z-index: 10;
+  font-family: system-ui, sans-serif;
+  font-weight: 500;
+}
+
+#rightMenu{
+  touch-action : manipulation;
+  height : 100%;
+  width : 42vh;
+  position: fixed;
+  top : 0;
+  right : -1000px;
+  z-index: 50;
+  transition: 0.3s ease;
+    background: transparent;
+  backdrop-filter: blur(50px) contrast(104%) brightness(100%) saturate(200%);
+   
+}
+.semi_right_menu{
+  display: grid;
+  grid-template-rows: repeat(4,1fr);
+  gap : 5px;
+  height: 250px;
+  flex-wrap : wrap;
+  
+}
+.menuItem{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+.menuItem:hover{
+  background-color : #F0E9B1;
+  
+}
+#openCloseMenu{
+ position : absolute;
+  right : 10px;
+  font-weight: 700;
+}
+
+
+#Header{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+
+background: linear-gradient(to bottom,
+    rgba(255,255,255,0.35),
+    rgba(255,255,255,0.15),
+    rgba(255,255,255,0.03),
+    transparent);
+
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  z-index: 40;
+}
+  </style>
+</head>
+    <body class="light">
+      <header id ="Header"><h2 onclick ="window.location.href='/cyphers/' "style="color : burlywood;">Welcome To Cyphers Api</h2>
+          <span id="openCloseMenu">&#9776;</span>
+      </header>
+      <div style="margin-top:75px;">
+<h4>Website under maintenance</h4>
+   <div id = "rightMenu">
+      <div class ="semi_right_menu">
+        <div class ="menuItem">Home </div>
+        <div class = "menuItem" id ="Theme">Theme</div>
+        <div class ="menuItem" onclick="logout()">Logout</div>
+        <div class ="menuItem" onclick="about()">About</div>
+  </div>
+   </div>
+      </div>
+      <footer></footer>
+        
+    <script>
+          document.addEventListener("DOMContentLoaded", () => {
+  // theme 
+  const button = document.getElementById("Theme");
+
+  // 1) APPLY THEME IMMEDIATELY
+  let savedTheme = localStorage.getItem("theme");
+
+  if (!savedTheme) {
+    const systemTheme =
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    savedTheme = systemTheme ? "dark" : "light";
+
+    localStorage.setItem("theme", savedTheme);
+  }
+
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(savedTheme);
+
+  function changeIcon(){
+if(document.body.classList.contains("dark")){
+    Theme.innerHTML ="Light Mode";
+  }else{
+  Theme.innerHTML = "Dark Mode";
+   }
+  }
+
+
+  // 2) TOGGLE ON CLICK
+  button.addEventListener("click", () => {
+    changeIcon()
+    let currentTheme = localStorage.getItem("theme");
+
+    document.body.classList.remove("light", "dark");
+
+    const newTheme =
+      currentTheme === "dark" ? "light" : "dark";
+
+    document.body.classList.add(newTheme);
+
+    localStorage.setItem("theme", newTheme);
+  });
+
+
+const rightMenu = document.getElementById("rightMenu")
+  const openCloseMenu = document.getElementById("openCloseMenu");
+let open = false
+  openCloseMenu.addEventListener("click",()=>{
+  
+    if(open=== false){
+  rightMenu.style.right = 0+"px";
+    return open = true;
+    }else{
+    rightMenu.style.right = -1000+"px";
+ return open = false;
+    }
+  })
+document.addEventListener("click",(e)=>{
+  if(open&&!rightMenu.contains(e.target)&& !openCloseMenu.contains(e.target)){
+  rightMenu.style.right = -1000+"px";
+    open = false;
+  }
+})
+});
+    </script>
+  
+</body>
+</html>
