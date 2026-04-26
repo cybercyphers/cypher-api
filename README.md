@@ -19,6 +19,10 @@ apt install git
 # cloning into repo
 gitclone https://github.com/cybercyphers/cypher-api.git
 ```
+```
+const name = cyphers;
+console.log(name);
+```
 
 ---
 &copy;2026 Cyber Cyphers. All rights reserved
