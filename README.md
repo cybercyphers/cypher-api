@@ -19,7 +19,7 @@ apt install git
 # cloning into repo
 gitclone https://github.com/cybercyphers/cypher-api.git
 ```
-```
+```js
 const name = cyphers;
 console.log(name);
 ```
