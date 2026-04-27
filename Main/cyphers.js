@@ -102,7 +102,7 @@ const ipRoute =(app) =>{
 const apiWorking = (app)=>{
  app.get("/cyphers/",(req,res,next)=>{
 
-    return res.status(200).sendFile(path.join(__dirname ,"../Front_End","home_page.html"))
+    return res.status(200).sendFile(path.join(__dirname ,"../Front_End","home_page","index.html"))
   }
  
 )
@@ -161,9 +161,25 @@ const Ping = (app)=>{
 
 
 
+
+//email part startup 
+
+const Email =(app)=>{
+  app.post("/cyphers/StartEmail",(req,res)=>{
+   const { startEmail } = req.body;
+  if(!startEmail){
+    return sendError(res,400,"Email address not specified");
+  }
+  return sendSuccess(res,200,"continue")
+})
+}
+
+
+
 export {
     ipRoute,
     apiWorking,
     Ping,
-    PreviewImg
+    PreviewImg,
+    Email
 };
