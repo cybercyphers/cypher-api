@@ -7,11 +7,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.join(__filename)
 import morgan from 'morgan';
 import Database from 'better-sqlite3';
+import cors from 'cors';
 import {
     ipRoute,
     apiWorking,
     Ping,
-    PreviewImg
+    PreviewImg,
+    Email
        } from './Main/cyphers.js';
 
 // module import ends
@@ -20,9 +22,11 @@ import {
 
 // execute import if any, only packages.
 const app = express();
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended : true}));
 app.use(express.static(path.join(__dirname,"Front_End")))
+app.use(express.static(path.join(__dirname,"Front_End","CSS")));
 app.use(morgan("dev"))
 app.set("trust proxy",1);
 app.set("json spaces",1.4)
@@ -39,7 +43,7 @@ ipRoute(app)
 apiWorking(app)
 Ping(app)
 PreviewImg(app)
-
+Email(app)
 //ither file actions ends here
  
 //-------------------------------------------
