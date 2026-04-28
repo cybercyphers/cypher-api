@@ -74,12 +74,19 @@ app.use(fingerprint);
 
 
 //blocked ips
-const blockedDevices = ["6b2b8376ed9b8ac46a42b7d5d9481982d079cc5f0993f518e6090815f6f4d1bf"];
+function liveCheck(){
+  const  blockedBrowsers = path.join(__dirname,"../maintainance","config.json");
+   const readBlocked = fs.readFileSync(blockedBrowsers,"utf8");
+    const readFile = JSON.parse(readBlocked).blockedDevices
+    console.log(readFile)
+    return readFile;
+}
 
 
 function checkBlocked(req,res,next){
-   
-    if(blockedDevices.includes(req.fingerprint)){
+    
+   const liveChecked = liveCheck();
+    if(liveChecked.includes(req.fingerprint)){
                console.log(`\n\n\x1b[1;36m A user with deviceId\x1b[0m \x1b[3;32m${req.fingerprint}\x1b[0m \x1b[1;36mtried accessing cypherApi but has been blocked due to suspicious activities\x1b[0m`)
  return res.status(403).json({ 
      Developer : "cyphers",
