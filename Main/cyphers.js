@@ -7,13 +7,14 @@ const __dirname = path.dirname(__filename);
 import os from 'os';
 import rateLimit from 'express-rate-limit';
 import Database from 'better-sqlite3';
-import { db } from './SQLs';
+import  { db, newInsert } from './SQLs.js';
+
 //-----â€”-------------------------------------
 
 
 
 async function getId(app){
- const ID = crypto.randomBytes(6).toString("hex");
+ const ID = crypto.randomBytes(5).toString("hex");
 }
 
 // maiantaincr function
@@ -78,7 +79,7 @@ function saveErrorLog(){
      fs.mkdirSync(errorPath, {recursive : true})
                                }
     }catch(err){
-console.log(err)}
+console.log("could not save error to file", err)}
 }
 
 //---------------------------â€”â€¢--------------
