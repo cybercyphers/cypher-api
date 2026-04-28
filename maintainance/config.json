@@ -1,5 +1,6 @@
 {
 "isUnderMaintainance" : false,
    "__comment" : "toggle maintanance mode for update", 
-   "blockedDevices" : []
+   "blockedDevices" : [],
+   "__comment" : "blocked devices or unauthorized users"
 }
