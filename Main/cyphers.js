@@ -7,9 +7,7 @@ const __dirname = path.dirname(__filename);
 import os from 'os';
 import rateLimit from 'express-rate-limit';
 import Database from 'better-sqlite3';
-
-
-const db = new Database("./DataBases/IDS.db");
+import { db } from './SQLs';
 //-----â€”-------------------------------------
 
 
