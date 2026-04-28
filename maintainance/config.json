@@ -1,4 +1,5 @@
 {
 "isUnderMaintainance" : false,
-   "__comment" : "toggle maintanance mode for update"
+   "__comment" : "toggle maintanance mode for update", 
+   "blockedDevices" : []
 }
