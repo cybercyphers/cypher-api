@@ -13,11 +13,13 @@
     "dependencies": {
         "better-sqlite3": "^12.9.0",
         "chalk": "^4.1.2",
+        "connect-sqlite3": "^0.9.16",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.6",
         "crypto": "^1.0.1",
         "express": "^5.2.1",
         "express-rate-limit": "^8.4.1",
+        "express-session": "^1.19.0",
         "morgan": "^1.10.1"
     }
 }
