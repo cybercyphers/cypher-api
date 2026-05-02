@@ -1,27 +1,38 @@
 // import modules 
+import Watch from './watch.js'
+import fetch from 'node-fetch'
 import express from 'express'; 
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.join(__filename)
+const __dirname = path.dirname(__filename)
 import morgan from 'morgan';
 import Database from 'better-sqlite3';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
+import session from 'express-session';
+import connectSql from 'connect-sqlite3';
 import {
     ipRoute,
     apiWorking,
     Ping,
     PreviewImg,
-    Email
+    Email,
+    getPort,
+    logDir,
+    GitHub,
+    totalRequests,
+    About
        } from './Main/cyphers.js';
 
-// module import ends
+const SQLiteStore = connectSql(session)
+// module import end
 
-//-------------------------------------------
+//------------------vh-------------------------
+
 
 // execute import if any, only packages.
 const app = express();
@@ -33,14 +44,7 @@ app.use(express.static(path.join(__dirname,"Front_End","CSS")));
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.set("trust proxy",1);
-app.set("json spaces",2)
-const PORT = 53727;
-
-
-
-
-// Device if Track;
-
+app.set("json spaces",2.4)
 
 
 //Rate limiting too many requests 
@@ -75,7 +79,7 @@ app.use(fingerprint);
 
 //blocked ips
 function liveCheck(){
-  const  blockedBrowsers = path.join(__dirname,"../maintainance","config.json");
+  const  blockedBrowsers = path.join(__dirname,"./maintainance/config.json");
    const readBlocked = fs.readFileSync(blockedBrowsers,"utf8");
     const readFile = JSON.parse(readBlocked).blockedDevices
     console.log(readFile)
@@ -108,21 +112,41 @@ function checkBlocked(req,res,next){
 app.use(checkBlocked)
 
 
+app.use(session({
+  store : new SQLiteStore({
+    db : "session.db",
+    dir: "./DataBases"
+  }),
+  name : "cypher.sid",
+  secret : "773879476d5e159873a7a0ccf5779782",
+  resave : false,
+  saveUninitialized : false,
+  cookie :{
+    httpOnly:true,
+    sameSite : "lax",
+      maxAge : 1000 * 60 * 60 * 24 * 30
+  }
+}))
+
+
 ipRoute(app)
 apiWorking(app)
 Ping(app)
 PreviewImg(app)
 Email(app)
+GitHub(app)
+totalRequests(app)
+About(app)
 
-app.get("/cyphers/try",(req,res)=>{
+app.get("/cyphers/browserId",(req,res)=>{
  res.json({ message : req.fingerprint })
 })
-//ither file actions ends here
- const logDir = [".npm","cache","_cacache","logs","log","git",".git"]
+//other file actions ends here 
 function removeLogs(){
    setTimeout(()=>{
       
-  for(const dir of logDir){
+  for(const dir of logDir()){
+     
                  if(fs.existsSync(dir)){
                  
                  fs.rm(dir, 
@@ -142,12 +166,20 @@ function removeLogs(){
 
 removeLogs()
 
+setInterval(()=>{
+ removeLogs()
+},6000)
+
+
+//Port inclusion 
+
+
 
 //-------------------------------------------
 
 // Port to listen on
-app.listen(`${PORT}`, ()=>{
-  console.log(`\x1b[1;33mWeb started runing  at \x1b[0m, \x1b[33m${new Date().toString()}\x1b[0m and \x1b[33m on port ${PORT}\x1b[0m`)
+app.listen(`${getPort()}`, ()=>{
+  console.log(`\x1b[1;33mWeb started runing  at \x1b[0m, \x1b[33m${new Date().toString()}\x1b[0m and \x1b[33m on port ${getPort()}\x1b[0m`)
 })
 
 // EOF
