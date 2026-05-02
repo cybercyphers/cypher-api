@@ -1,137 +1,467 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>About</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+<!doctype html>
+<html lang ="en">
+ <head>  
+     <title>Welcome </title>
+     <meta property="og:name" content ="Cypher-api DashbBoard">
+     <meta property ="og:description" content ="Reliable api to make developers work faster and accurate"/>
+     <meta property ="og:image" content="https://panel-cyphers.nett.to/cyphers/cypher_prev"/>
+     <meta charset="utf-8"/>
+     <meta name="viewport"content="width=device-width, initial-scale=1.0,maximum-scale=1" /> 
+     <meta property = "og:url" content = "https://panel-cyphers.nett.to/cyphers/"/>
+     <meta property ="og:type" content = "website"/>
+     <link rel ="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+   <style>
+  body.light{
+  background-color: white;
+  color : black;
+  transition: 0.1s ease;
+}
+input.dark,label.dark,body.dark {
+    background-color : black;
+  color: white;
+  transition:  0.1s ease;
+}
+       #semi_footer.dark{
+   background-color : #111;
+}
+  .requestContainer.dark{
+background: linear-gradient(135deg,#020617,#0f172a,#1e293b);
+}
+  #startEmail::placeholder{
+  font-weight: 700;
+    font-size: 16px;
+      color : black;
+      padding-left : 8px;
+}
+  #startEmail {
+    font-size: 16px;
+    font-weight: 700;
+    background: transparent;
+    border: solid 2px green;
+    border-radius: 10px;
+    backdrop-filter: blur(30px);
+    box-shadow: inset 2.4px 2.3px 2px rgba(0,0,0,0.6);
+  }
+  #startButton{
+    cursor: pointer;
+    background: transparent;
+    backdrop-filter: blur(10px);
+    color: black;
+    font-size: 12px;
+    border-radius:8px;
     
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
-<style>
-body{
+  }
+
+html, body{
+  touch-action: manipulation;
+  z-index: 10;
+  font-family: system-ui, sans-serif;
+  font-weight: 500;
+    min-height : 100vh;
+    display:flex;
+    flex-direction:column;
     margin:0;
-    font-family:Arial, sans-serif;
-    background:#0f0f0f;
-    color:white;
 }
 
-.container{
-    max-width:900px;
-    margin:auto;
-    padding:40px 20px;
+#rightMenu{
+  touch-action : manipulation;
+  height : 100%;
+  width : 42vh;
+  position: fixed;
+    overflow-y : auto;
+  top : 0;
+  right : -1000px;
+  z-index: 50;
+  transition: 0.3s ease;
+    background: transparent;
+  backdrop-filter: blur(50px) contrast(104%) brightness(100%) saturate(200%);
+   
+}
+.semi_right_menu{
+  display: grid;
+    grid-auto-rows :70px;
+  gap : 5px;
+   
+  
+}
+.menuItem{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+.menuItem:hover{
+  background-color : #F0E9B1;
+  
+}
+#openCloseMenu{
+ position : absolute;
+  right : 10px;
+  font-weight: 700;
 }
 
-h1{
-    color: thistle;
-    font-size:40px;
+#Header{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+
+background: linear-gradient(to bottom,
+    rgba(255,255,255,0.40),
+    rgba(255,255,255,0.15),
+    rgba(255,255,255,0.01),
+    transparent);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  z-index: 40;
 }
 
-h2{
-    color:gold;
-    margin-top:30px;
+    #box{
+        display:grid;
+        gap : 10px;
+            grid-template-rows : repeat(2,1fr);
+         grid-template-columns: repeat(2,1fr);
+        justify-content : center;
+        align-content : center;
+        margin-top :15px;
+        height : 25vh;
 }
-
-p{
-    line-height:1.7;
-    color:#ddd;
+   @media screen and (max-width :360px){ 
+       #box{
+ grid-template-columns: repeat(2,1fr);
+       }
 }
-
-.card{
-    background:#1a1a1a;
-    padding:20px;
-    border-radius:10px;
-    margin-top:20px;
+       .requestContainer{
+         display :flex;
+         justify-content:center;
+         align-items:center;
+         border-radius:20px;
+         background:rgba(255,255,255,0.08);
+         border:1px solid rgba(255,255,255,0.9);
+         box-shadow:0 5px 14px rgba(0,0,0,0.4);
+           backdrop-filter : blur(15px) brightness(150%) contrast(80%);
+         transition:0.3s;
+           text-decoration:none;
+           border:solid 0.6px grey;
 }
-
-.badge{
-    display:inline-block;
-    background:#25D366;
-    padding:5px 10px;
-    border-radius:20px;
-    font-size:12px;
-    margin:5px 5px 0 0;
+       .requestContainer:hover{
+         border : solid 1px green;
 }
-    pre{
-    background:#0d1117;
-    padding:18px;
-    border-radius:10px;
-    overflow:auto;
-    line-height:1.2;
-    font-size:14px;
+    #Footer{
+        display:flex;
+        margin-top: auto;
+        flex-wrap:wrap;
+        box-sizing:border-box;
+        margin-left : 0px;
+        width:100%;
+        max-height:20vh;
+        border-top:solid grey 1px;
+      
 }
-
-code{
-    white-space:pre;
-    display:block;
+       #semi_footer{
+        display:flex;
+         background-color: transparent;
+           backdrop-filter : blur(20px) brightness(160%) contrast(140%);
+           flex-direction:column;
+           justify-content:space-around;
+           flex-wrap:wrap;
+           gap:20px;
+           width:100%;
+          padding :12px;
+          
+}
+       #semi_footer a{
+          text-decoration:none;
+           font-style:italic;
+           color : blue;
 }
     
-</style>
+       .footerLabel{
+         color : burlywood;
+           font-size: 15px;
+           font-weight:700;
+           
+}
+  </style>
 </head>
-
-<body>
-
-    <button onclick ="window.location.href='/cyphers/home_page'"><i class="fa-solid fa-chevron-left" style="width:50px; height:30px ; text-align:center; ">Back</i></button>
-<div class="container">
-<div style="text-align:center;">
-    <h1 style="margin-bottom:12px; font-size:60px;">Cyphers</h1>
-    <span style=" font-weight:700;margin-bottom:50px;color : #888; font-weight:bold;">Developer â€¢ Backend â€¢ Api â€¢ JavaScript â€¢ SQL â€¢ Python</span>
-    </div>
-    <p>
-        I am <strong>Cyber Cyphers,</strong> a solo developer focused on building web systems, APIs, automation tools, and backend solutions and secure layers of security.
-        My goal is to create powerful and efficient systems that solve real-world problems using JavaScript and modern web technologies. <em>Also a free guy not the hype type.</em>
-    </p>
-
-    <div class="card">
-        <h2>Developer Life</h2>
-        <p>
-            I spend most of my time working on web applications, backend logic, and system automation with total dedication. 
-            I enjoy breaking down complex problems into simple logic and building scalable solutions.
-        </p>
-
-        <span class="badge">JavaScript</span>
-        <span class="badge">Node.js</span>
-        <span class="badge">APIs</span>
-        <span class="badge">Backend</span>
-        <span class="badge">Automation</span>
-    </div>
-
-    <div class="card">
-        <h2>Web Usage</h2>
-        <p>
-            The web is my workspace. I use it to build APIs, connect services, deploy applications, and create tools
-            that interact with real-time data. Everything I build is designed to be fast, functional, and scalable.
-        </p>
-    </div>
-
-    <div class="card">
-        <h2>Vision</h2>
-        <p>
-            My focus is to grow into advanced system engineering and cybersecurity development,
-            building tools that are both powerful and secure. </p>
-    </div>
-
-</div>
-    <div class="card">
-        <h2>Best Language</h2>
-      <pre><code class="language-javascript">
-const languages = ["Python","JavaScript","SQL","PHP"]
- function bestLang(params){
-  for(const lang of params){
-       if(lang.startsWith("J") && lang.endsWith("t")){ 
-  const final= `The best Language is, ${lang}`;
-    console.log(final)
-    break;
-}   
-  }  
-}
-     bestLang(languages) 
-     
-     // Output : The best Language is, JavaScript
-        </code></pre>
-</div>
     
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <body style="opacity:1;" class="light">
+      <header id ="Header"><h2 id ="headerH2" onclick ="window.location.href='/cyphers/home_page' "style="color : burlywood;"></h2>
+          <span id="openCloseMenu">&#9776;</span>
+      </header>
+      <div style="margin-top:75px;">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+          
+        <div style = "display: flex; justify-content: center; align-items: center; width: auto; height: auto;">
+        <div id ="ipContainer" style ="box-shadow: inset 3px 5px 4px 0 rgba(0,0,0,0.6); width: 300px; height: 60px; border-radius: 15px; background-color: #999999; display: flex; justify-content: center; align-items: center; touch-action:manipulation;">IP loading....</div>
+        </div>
+          <br/>
+          
+    <div id ="start" style="display:block;">
+     
+       <div style="position : fixed; z-index:499; inset:0; background:transparent; backdrop-filter:blur(30px);"></div>
+       <div style =" position :fixed;width:47vh; height:280px; border-radius :35px;  background:rgba(255,255,255,.2);
+
+backdrop-filter:blur(25px) brightness(120%) contrast(100%) saturate(90%);
+
+border:1px solid rgba(255,255,255,.3);
+
+color:white;
+                    display:flex; justify-content:center; align-items:center; margin:0; top:50%; left:50%; transform:translate(-50%,-50%); z-index:500;">
+ 
+  <form style ="display : flex; justify-content:center; flex-direction:column; align-items : center;" id="emailForm">
+     
+  <label id="label" style=" font-weight:900; "for="startEmail">Please Enter a username to continue</label><br/>
+  
+      <i class ="fa-solid  fa-user"></i>  <input id="startEmail" type="text" name = "startEmail" style="height: 40px; width: 300px; "placeholder="username required "required/>
+  <br/>
+  <button id ="startButton" style=" display:block; margin-top:3px;width:120px; height: 30px;">Execute</button>
+  </form>
+           </div>
+         
+          </div>
+          <!--home page begin after verification-->
+          <main>
+        <div id="box">  
+     <div class = "requestContainer" id= "requestDisplay">Total Requests: 650</div>
+            <div class ="requestContainer" id ="Date">Time Loading..</div>
+    <div class = "requestContainer">Rate Limit : 60</div>
+    <div class = "requestContainer">Information</div>
+
+          <!--continue body--> 
+            
+            
+            
+            
+            
+            
+            
+            
+         
+         </div>
+          </main>
+    <!--hompage ends here -->
+   <div id = "rightMenu">
+      <div class ="semi_right_menu">
+        <div onclick = "window.location.href='/cyphers/home_page'"class ="menuItem">Home </div>
+        <div class = "menuItem Theme" >Theme</div>
+        <div class ="menuItem" onclick="window.location.href='https://github.com/cybercyphers'">Github</div>
+        <div class ="menuItem" onclick="window.location.href='/cyphers/about'">About</div>
+          <div class ="menuItem">Logout</div>
+          <div class = "menuItem">clear cookies</div>
+          <div class ="menuItem">resend</div>
+          <div class = "menuItem" onclick="logout()">Logout</div>
+  </div>
+   </div>
+        </div>
+        
+        
+        
+              
+        
+        
+      <footer style="box-shadow : -5px -6px 3px rgba(0,0,0,0.25);" class="dark" id ="Footer">
+        
+          <div id="semi_footer">
+              <img onclick="window.location.href='/cyphers/home_page'"style=" margin-left : 15px; margin-top:15px; border-radius:15px;width:60px; height:60px;"src="https://panel-cyphers.nett.to/cyphers/cypher_prev"/> <figcaption style=" font-weight:700;color:green;">Cypher Api's</figcaption>
+                <span>Your trusted Developer in reliable and trusted Api's.</span>
+              <span class="footerLabel"><i class="fa-solid fa-link"></i>Visit us on :</span>
+              <a href="https://wa.me/+233539738956"><i style="color:green;font-size:20px;"class="fa-brands fa-whatsapp">WhatsApp</i></a>
+              <a href=""> <i style="font-size:20px;" class="fa-brands fa-tiktok">TikTok</i></a>
+              <a href="" style="font-size:20px;"class ="fa-brands fa-instagram"><i>Instagram</i></a>
+              <ul><span class ="footerLabel">Quick Links <i class = "fa-solid fa-link"></i></span>
+                  <li><a href="/cyphers/home_page">Home</a></li>
+                 
+                  <li> <a href="">Cookie</a></li>
+                  <li>  <a href="">Time</a></li>
+                  <li><a onclick="window.location.href='/cyphers/about'">About</a></li>
+                  <li> <a href="">Logout</a></li>
+              </ul>
+              <span class ="footerLabel">Contact Us</span>
+ <span><i class="fa-solid fa-phone"></i>+233539738956</span><span> <i class="fa-solid fa-envelope"></i>cybercyphers2008@gmail.com</span><span><i class="fa-solid fa-location"></i>Accra-Ghana</span>
+          <div style="border-top: solid 1px grey; ">
+          <p>&copy;2026 Cypher Api. All rights reserved</p>
+              </div>
+              </div>
+        </footer>
+        
+    <script>
+          document.addEventListener("DOMContentLoaded", () => { 
+            console.log("website load was successfull")
+  // theme 
+  const button = document.querySelector(".Theme");
+
+  // 1) APPLY THEME IMMEDIATELY
+  let savedTheme = localStorage.getItem("theme");
+
+  if (!savedTheme) {
+    const systemTheme =
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    savedTheme = systemTheme ? "dark" : "light";
+
+    localStorage.setItem("theme", savedTheme);
+   console.log("Theme saved to localStorage");
+  }
+
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(savedTheme);
+
+  function changeIcon(){
+if(document.body.classList.contains("dark")){
+    button.innerHTML ="Light Mode";
+  }else{
+  button.innerHTML = "Dark Mode";
+   }
+  }
+
+  // 2) TOGGLE ON CLICK
+  button.addEventListener("click", () => {
+    changeIcon()
+    let currentTheme = localStorage.getItem("theme");
+
+    document.body.classList.remove("light", "dark");
+
+    const newTheme =
+      currentTheme === "dark" ? "light" : "dark";
+
+    document.body.classList.add(newTheme);
+
+    localStorage.setItem("theme", newTheme);
+  });
+
+const rightMenu = document.getElementById("rightMenu")
+  const openCloseMenu = document.getElementById("openCloseMenu");
+let open = false
+  openCloseMenu.addEventListener("click",()=>{
+  
+    if(open===false){
+  rightMenu.style.right = 0+"px";
+    return open = true;
+    }else{
+    rightMenu.style.right = -1000+"px";
+ return open = false;
+    }
+  })
+document.addEventListener("click",(e)=>{
+  if(open&&!rightMenu.contains(e.target)&& !openCloseMenu.contains(e.target)){
+  rightMenu.style.right = -1000+"px";
+    open = false;
+  }
+})
+        window.iP=async function (){
+            try{
+            const ipReq = await fetch("/cyphers/ip");
+            const ipRes = await ipReq.json()
+          const ip = ipRes.ip;
+          return `Your IP Address is : ${ip}`;
+            }catch(err){
+              console.log(err)
+            }
+         }
+            const ipContainer = document.getElementById("ipContainer");
+            (async ()=>{
+             const address=  await iP();
+              ipContainer.textContent = address;
+              
+            })()
+              
+              const emailForm=document.getElementById("emailForm");
+              emailForm.addEventListener("submit", async(e)=>{
+                  const StartEmail = document.getElementById("startEmail").value
+                  const start = document.getElementById("start");
+                  e.preventDefault()
+   const req = await fetch("https://panel-cyphers.nett.to/cyphers/startEmail",{ 
+       method : "POST",
+       headers : {
+       "Content-Type" : "application/json"
+},
+       body: JSON.stringify({
+          startEmail : StartEmail
+          
+ })
+   })
+       const res= await req.json();
+         if(res.message === "continue"){
+        localStorage.setItem("verified", "true")    
+             location.reload()
+             localStorage.setItem("name",StartEmail);
+       start.style.display="none";
+   }
+                  else{
+   start.style.display="flex";              localStorage.setItem("verified","false")
+  }
+})  
+function isVerified(){
+     if(localStorage.getItem("verified")==="true"){
+ start.style.display ="none";
+}
+}
+              isVerified()
+              function update(){
+    const Header = document.getElementById("headerH2")
+     Header.innerHTML = `Welcome, ${localStorage.getItem("name") || 'new user'}`
+              }
+    
+            update()
+             
+              
+              //Requests display
+              
+  async function REQUEST(){
+      try{
+  const requests = await fetch("/cyphers/totalRequests",{ method:"GET", headers : { 
+    "Content-Type" : "application/json"
+                                                                                  }
+                                                        });
+       const response = await requests.json();
+       return response.totalReqs;
+      }catch(err){
+     console.log(err)
+  }
+}
+                    const displayIp = document.getElementById("requestDisplay");
+      
+   async function DisplayIp(){
+      
+   setInterval(async()=>{
+       try{
+      const info = await REQUEST()
+    displayIp.innerHTML = `Total Requests: ${info}`
+
+       }catch(err){
+           console.log(err)
+       }
+   },45000)
+     } 
+              DisplayIp()
+           
+  function Showdate(){
+       const date = new Date().toLocaleString()
+       const display = document.getElementById("Date");
+      display.innerHTML = date;
+    }
+              setInterval(()=>{
+             Showdate()
+              },1000)
+              
+      function logout(){
+          localStorage.clear()
+      }
+ 
+          
+      
+              
+});
+     
+    </script>
+  
 </body>
 </html>
