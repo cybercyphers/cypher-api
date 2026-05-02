@@ -8,7 +8,7 @@
 
 
 ---
-######Intallation guide
+###### Intallation guide
 ```
 set up VPS with a path /cyphers/ .eg. https://panel.example.com/cyphers/ 
 ```
