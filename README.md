@@ -3,11 +3,15 @@
 ---
 
 ![](https://github.com/cybercyphers/cypher-api/blob/main/Front_End/cypher_prev.png)
-*Made with love ❤️ in **Ghana**.*
+
 ---
 
 
 ---
+######Intallation guide
+```
+set up VPS with a path /cyphers/ .eg. https://panel.example.com/cyphers/ 
+```
 ```
 sudo apt update && sudo apt upgrade
 ```
