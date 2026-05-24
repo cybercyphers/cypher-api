@@ -9,6 +9,9 @@ import os from 'os';
 import rateLimit from 'express-rate-limit';
 import Database from 'better-sqlite3';
 import bcrypt from 'bcrypt';
+import figlet from 'figlet';
+import chalk from 'chalk';
+import dns from 'dns';
 import  db,{    
     newInsert,
     sdb,
@@ -17,11 +20,12 @@ import  db,{
     isAlreadyLoggedInToggle,
     isAlreadyLoggedInToggleFalse,
     usernameResetSelect,
-    userPasswordReset
+    userPasswordReset,
+    adminUserBlock
 } from './SQL.js';
 import crypto from 'crypto';
 
-import { saveErrorLog } from '../index.js';
+import { saveErrorLog,sendCreatedEmail,sendEmailCode } from '../index.js';
 
 const ID = crypto.randomBytes(3).toString("hex")
 //-----Ã¢â‚¬â€-------------------------------------
@@ -87,18 +91,19 @@ function getMaintainanceStatus(){
 }
 
 // checking maintainance function
-function checkMaintainance(req,res,next){
+ function checkMaintainance(req,res,next){
    const checkAndRespond = getMaintainanceStatus()
   if(checkAndRespond){
      return res.status(503).json({
          Developer : "cyphers",
          status : 503,
          date : `${new Date().toString()}`,
-         message : "cypher-api is currectly under a big maintainance. please come back after some minutes Ã°Å¸ËœÅ "
+         message : "cypher-api is currectly under a big maintainance. please come back after some time"
          
 })
+      
       return true;
-  } 
+  }
     return false;
 }
 // date
@@ -108,14 +113,18 @@ function date(){
 }
 
 // function to send succes if true
-const sendSuccess =(res,statusCode,message)=>{
-  return res.status(200).json({ 
+const sendSuccess =(res,statusCode,message,name,prompt)=>{
+   
+ return res.status(statusCode).json({ 
       Developer : "cyphers",
       success : true,
       Date : date(),
       statusCode : `${statusCode}`,
-      message : `${message}`
+      prompt :prompt,
+      name : name || "Cypher_Api",
+      data : message
   })
+  
 }
 
 // function to send error if false 
@@ -160,8 +169,9 @@ const ipRoute =(app) =>{
 // api working route
 //-------------------------------------------
 const apiWorking = (app)=>{
- app.get("/cyphers/home_page",(req,res,next)=>{
+ app.get("/cyphers/home_page",(req,res,next)=>{    
 if(!req.session.user){
+     
    return res.status(403).send(`<!doctype html>
 <html lang="en">
 <head>
@@ -269,6 +279,10 @@ align-items:center;
 </body>
 </html>`)
 }
+     const fingerPrintInfo = req.fingerprint
+     const finalInfo = `${req.session.user+"'s" || "A new user's "} browser ID is ${fingerPrintInfo} `;
+    console.log("\x1b[3;36mInfo saved....\x1b[0m]")
+     saveUserInfo(req.session.user,finalInfo)
      
 return res.status(200).sendFile(path.join(__dirname ,"../Front_End","home_page","index.html"))
 
@@ -280,75 +294,118 @@ return res.status(200).sendFile(path.join(__dirname ,"../Front_End","home_page",
 
 
 
-//ping route
-//------------/------------/-------------/---
-const Ping = (app)=>{
-    try{
-        
- app.get("/cyphers/ping",( req,res,next)=>{
-      if(checkMaintainance(req,res,next)) return;
-  let { domain, repeatFor } = req.query;
- if(!domain){
-    return sendError(res,400,"Please specify the domain.");
-}else if(!repeatFor){
-  return sendError(res,400,"please specify the number of times to ping the domain for.eg.                ping=https://example.com?domain=https://example.com&repeatFor=3")
-   }
-    const domainValidation =/^https?:\/\/|(www\.)?.+/
-     const domainValidationResult = domainValidation.test(domain);
-     
- if(domainValidationResult){
-    const finalDomain = new URL(domain);
-     const finalDomainHostname = finalDomain.hostname;
-     const PING = execFile("ping", ["-c",`${repeatFor}`,finalDomainHostname],(err,stdout)=>{
-    if(err){
-        console.log(err)
-      return sendError(res,err.statusCode,"Oops an error occured, please try again later. We are reviewing the error and what caused it")
+
+function isSafeInput(input) {
+  return /^[a-zA-Z0-3.-]+\.[a-zA-Z]{2,}$/.test(input);
 }
-         const pingTimeValidation = stdout.match(/time=([\d.]+)\s*ms/);
-      const pingTime =  pingTimeValidation[1] || null;
-         let rate;
-    if(pingTime < 100){
-     rate = "The Domain response time is very fast Ã°Å¸â€Â¥ Execllent";
-}else if(pingTime > 100 && pingTime<= 300){
-    rate = "The Domain response Time is moderateË†";
-  } else if(pingTime > 400){
-     rate = "The Domain response time is very slow.If the domain is yours please try upgrading the response time for productivity"
-}
-         return res.status(200).json({
-             Developer : "cyphers",
-             success : true,
-             status : 200,
-             date : date(),
-             message : "ping was successfull Ã¢Ëœâ€˜",
-             response : pingTime+"ms",
-             rate : rate
-    })
-  })
- }
-})
-    }catch(err){
-      console.log(err)
-}
-}
+
+// ping route
+const Ping = async (app) => {
+
+  app.get("/cyphers/ping", async (req, res, next) => {
+    try {
+      if (checkMaintainance(req, res, next)) return;
+
+      let { domain, repeatFor } = req.query;
+
+      if (!domain) {
+        return sendError(res, 400, "Please specify the domain.");
+      } else if (!repeatFor) {
+        return sendError(res, 400, "please specify the number of times to ping the domain for.eg. ping=https://example.com?domain=https://example.com&repeatFor=3");
+      }
+
+      const domainValidation = /^https?:\/\/|(www\.)?.+/;
+      let domainValidationResult = domainValidation.test(domain);
+
+      if (!domainValidationResult) {
+        return sendError(res, 400, "The url given is invalid");
+      }
+
+      const finalDomain = new URL("https://" + domain);
+      const finalDomainHostname = finalDomain.hostname.split(" ")[0];
+
+      // FIX: validate hostname string, not URL object
+      if (!isSafeInput(finalDomainHostname)) {
+        return sendError(res, 400, "Blocked request");
+      }
+
+      // FIX: proper async handling (no fake dnsLookup variable)
+      dns.lookup(finalDomainHostname, (err, address, family) => {
+        if (err) {
+          return sendError(res, 400, "Invalid URL given, please recheck the URL");
+        }
+
+          if(!this.ok){
+              return sendError(res,res.statusCode,"An error occured, please try again later")
+          }
+        execFile(
+          "ping",
+          ["-c", `${repeatFor}`, finalDomainHostname.trim()],
+          (err, stdout) => {
+
+            if (err) {
+              console.log(err);
+              return sendError(res, 500, "Oops an error occured, please try again later. We are reviewing the error and what caused it");
+            }
+
+            const pingTimeValidation = stdout.match(/time=([\d.]+)\s*ms/);
+            const pingTime = pingTimeValidation ? pingTimeValidation[1] : null;
+
+            let rate;
+
+            if (pingTime < 100) {
+              rate = "The Domain response time is very fast, Excellent";
+            } else if (pingTime > 100 && pingTime <= 300) {
+              rate = "The Domain response Time is moderateÃ‹â€ ";
+            } else if (pingTime > 400) {
+              rate = "The Domain response time is very slow.If the domain is yours please try upgrading the response time for productivity";
+            }
+
+            return res.status(200).json({
+              Developer: "cyphers",
+              success: true,
+              status: 200,
+              date: date(),
+              message: "ping was successfull",
+              response: pingTime + "ms",
+              rate: rate
+            });
+          }
+        );
+      });
+
+    } catch (err) {
+      saveErrorLog(req, err);
+      return sendError(res, 500, "An error occurred. please try again later.");
+    }
+  });
+};
 
 
 
 
-//email part startup 
+   
 
-const Email =(app)=>{
-    try{
-  
-    }catch(err){
- console.log(err)
-     }
-}
+
+
+
+
+
+         
+         
+         
+         
+
+
+
 
 //github info and download
 const GitHub=(app)=>{
-    try{
+    
   
-  app.get("/cyphers/github",async(req,res)=>{
+  app.get("/cyphers/github",async(req,res,next)=>{
+      try{
+      if(checkMaintainance(req,res,next))return;
   let { url, type } = req.query;
  if(!url){
    return sendError(res,400,"'url' not specified, please specify the url.eg. https://panel-cyphers.nett.to/cyphers/github?url=https://github.com/username/name.git&type=json");
@@ -365,20 +422,41 @@ const githubRepoValidation = /^https:\/\/github\.com\/.+\/.+(?:\.git)?$/
   if(!type){
     return sendError(res,400,"please specify how you would want to receive the data.eg.https://pane........com&type=json");
   }
+      
+      
   if(type ==='json'){
       const finalPath = pathName.replace(".git","")
      const finalUrl =`https://api.github.com/repos${finalPath}`
  const ask = await fetch(finalUrl,{ method :"GET", headers : {
      "Content-Type" : "application/json"
  }})
-  
-      const rq = await ask.json();
+ 
+ if(!ask.ok){
+ return sendError(res,req.statusCode,"We encountered an error. please check request body and make sure all is set")
+}
+ const rq = await ask.json();
       const final = JSON.stringify(rq)
    return sendSuccess(res,200,[final])
   }
       return sendError(res,200,"Oops an error occured, please try again later.")
-  })
-    }catch(err){console.log(err.stack)}
+ 
+ 
+ //if zip rather
+if(type==="zip"){
+  const zipUrl =`https://github.com${pathName}/archive/refs/heads/main.zip`;
+     
+     const fetchFile = await fetch(zipUrl);
+     const BufferFile = await fetchFile.arrayBuffer();
+     res.setHeader("Content-Disposition", "attachment;filename=githubMain.zip");
+     res.setHeader("Content-Type","application/zip");
+     res.status(200).send(Buffer.from(BufferFile))
+}
+ 
+      
+  
+    }catch(err){console.log(err.stack)
+               saveErrorLog(req,err)}
+    })
 }
 
 
@@ -415,9 +493,12 @@ const About = (app)=>{
 //signup route
 const signUpPOST =(app)=>{
    
-    app.post("/cyphers/sign_up",async(req,res)=>{
+    app.post("/cyphers/sign_up",async(req,res,next)=>{
         try{
- const { username, password } = req.body || {};
+            if(checkMaintainance(req,res,next)){
+return;
+            }
+ const { username, email,password, gender } = req.body || {};
     if(!username){
      return sendError(res,400,"Please give a unique username");
  };
@@ -427,20 +508,31 @@ const signUpPOST =(app)=>{
             if(password.length <= 5 || password.length > 15){
      return  sendError(res,400,"Password should be at least six characters ")
 }
+        if(!gender){
+            return sendError(res,400,"Gender is required");
+        }
+            if(!email){
+return sendError(res,400,"Email required");
+            }
+            
         const hashedPass = await bcrypt.hash(password,10)
-   const result =  signUpsInsert(username,hashedPass);
+   const result =  signUpsInsert(username,email,hashedPass,gender);
             
             
           if(!result || result.changes <= 0){
         return sendError(res,409,"user already exists")
 }
-   
+         
+  sendCreatedEmail(email)
+            req.session.emailVerification = email;
+            req.session.preUsername = username;
         sendSuccess(res,200,"signup was successfull");
+            
             console.log(`\x1b[36mA new user signed Up. Identifier ${username} at ${new Date().toISOString()}`)
-           
+           return   sendEmailCode(email)
     }catch(err){
        console.log(err)
-       
+        saveErrorLog(req,err)
      }
    })
 };
@@ -462,8 +554,12 @@ const signUpGET = (app)=>{
     
 
 const logInPOST = (app)=>{
-  app.post("/cyphers/login",async(req,res)=>{
+  app.post("/cyphers/login",async(req,res,next)=>{
       try{
+          if(checkMaintainance(req,res,next)){
+return;
+      }
+         
     let { username, password } = req.body;
       if(!username || !password){
    return sendError(res,400,"All fields required");
@@ -485,6 +581,12 @@ const logInPOST = (app)=>{
           return sendError(res,400,"wrong password, please try again ")
               
        }   
+          
+          const isBlockedCheck = userCheck.isBlocked;
+          if(isBlockedCheck ===1 || isBlockedCheck===true){
+              req.session.destroy()
+   return sendError(res,403,"Your account has been blocked temporarily, please contact support")
+}
           // check wheather already logged in on other device and set status
           
       const isAlreadyLoggedInCheck = userCheck.isAlreadyLoggedIn;
@@ -509,9 +611,16 @@ const logInPOST = (app)=>{
  });
 };
 
-const logInGET = (app,brutePrevent)=>{
-  app.get( "/cyphers/login",(req,res)=>{
-return res.status(200).sendFile(path.join(__dirname,"../Front_End","home_page","login.html"))
+const logInGET = (app)=>{
+  app.get("/cyphers/login",(req,res)=>{
+ try{
+     if(!req.session.user){
+return res.status(200).sendFile(path.join(__dirname,"../Front_End","home_page","login.html"));
+     }
+return res.redirect("/cyphers/home_page");
+ }catch(err){
+   saveErrorLog(err)
+ }
   });
 };
 
@@ -545,8 +654,11 @@ const User = (app)=>{
 //password reset route
 
 const resetPassword = (app)=>{
-  app.patch("/cyphers/reset_password",async(req,res)=>{
+  app.patch("/cyphers/reset_password",async(req,res,next)=>{
       try{
+          if(checkMaintainance(req,res,next)){
+return;
+          }
     let { username, oldPassword, newPassword } = req.body;
 if(!req.session.user){
   return sendError(res,401,`Oops, we could not verify ${ req.ip || "you" } as the rightful owner to this account, please try again later`)
@@ -572,12 +684,286 @@ if(!req.session.user){
       
       return sendSuccess(res,200,"password reset successfully");  
       }catch(err){
-     return res.status(500).send("Oops an error occured please try afain later")
+     return res.status(500).send("Oops an error occured please try again later")
           saveErrorLog(err)
 }
   });
   
 };
+
+
+//admin block route
+
+const blockUser =(app)=>{
+  app.post("/cyphers/blockUser",(req,res,next)=>{
+    const { username } = req.body;
+
+    if(!username){
+      return sendError(res,400,"specify username to block");
+    }
+    const blockUser = adminUserBlock.run(username);
+    return sendSuccess(res,200,"User Blocked Successfully")
+  })
+}
+
+
+
+
+
+//socket.ip initialization
+const VerifyEmail = (app)=>{
+  app.get("/cyphers/verifyEmail",(req,res)=>{
+    return res.sendFile(path.join(__dirname,"../Front_End","home_page","verifyEmail.html"));
+});
+};
+
+
+
+const sendCode = (app) => {
+    
+  app.post("/cyphers/sendCode", async (req, res,next) => {
+    
+      const email = req.session.emailVerification;
+
+if (!email) {
+  return sendError(res, 404, "Email address badly structured");
+}
+
+const code = await sendEmailCode(email);
+console.log("Verification Email sent successfully")
+  
+
+if (!code) {
+  return sendError(res, 500, "Failed to send code");
+}
+
+req.session.code = code;
+req.session.codeExpires = Date.now() + 5 * 60 * 1000;
+
+return sendSuccess(res, 200, "code sent successfully");
+      
+      
+  })
+};
+
+
+
+const VerifyEmailPost = (app) => {
+  app.post("/cyphers/verifyEmail", (req, res) => {
+    const { userCode } = req.body;
+
+    if (!userCode) {
+      return sendError(res, 400, "Code is required");
+    }
+
+    if (!req.session.code) {
+      return sendError(res, 400, "No verification code found or session expired");
+    }
+
+    if (Date.now() > req.session.codeExpires) {
+      return sendError(res, 410, "Code expired");
+    }
+
+    const isValid =
+      String(userCode).trim() === String(req.session.code).trim();
+
+    if (!isValid) {
+      return sendError(res, 403, "Wrong code");
+    }
+
+    // optional cleanup after success
+    req.session.code = null;
+    req.session.codeExpires = null;
+    req.session.user=req.session.preUsername;
+        
+    return sendSuccess(res, 200, "Email verified successfully");
+  });
+};
+
+// available commands 
+const availableRoutes = (app)=>{
+ app.get("/cyphers/Routes",(req,res)=>{
+     try{
+ return res.status(200).json({
+     success :true,
+     Routes : ["/cyphers/GitHub", "/cyphers/veniceUncensored","/cyphers/home_page","/cyphers/gpt4","cyphers/login","/cyphersping", "/cyphers/encryption","/cyphers/decryption","/cyphers/lyrics"]
+ })
+     }catch(err){ saveErrorLog(req,err)}
+  })
+}
+
+
+
+
+
+// encryption command route
+const encryptionRoute = (app)=>{
+  app.get("/cyphers/getEncryptionCredentials",(req,res)=>{
+ const newKey = crypto.randomBytes(32).toString("hex");
+      const newIv = crypto.randomBytes(16).toString("hex");
+      const FinalInfo = {"key" : newKey, "iv" : newIv, "Important_Info" : "Please note these keys are what you will use to encrypt and decrypt the encrypted information. Failure to remember this key will leave your encrypted values locked forever and unable to be decrypted.These keys are automatically regeneratad on every request overwriting previous ones for this reason, please keep your keys secure and hidden from sight to avoid leakage as this is your key and lock to every info you encrypt with it.  "}
+      return sendSuccess(res,200,FinalInfo)
+})
+}
+
+
+
+const startEncryption = (app)=>{
+    
+    
+ app.get("/cyphers/encryption",(req,res)=>{
+     
+         const { key,iv,value} = req.query;
+     try{
+         if(!key){
+  return sendError(res,400,"They key for encryption is required");          
+}
+         if(!iv){
+ return sendError(res,400,"The IV for encryption is required.");
+         }
+         if(!value){
+ return sendError(res,400,"The body or value to encrypt was not given please include the value in your request.")
+}
+      if(key.length < 64 || key.length > 64){
+    return sendError(res,400,"The Encryption Key should be exactly 32 bytes which is (64 chars) not more that 64 and not less that 64")
+}
+       if(iv.length < 32 || iv.length > 32){
+   return sendError(res,400,"â€¢The IV key should be exactly 16 bytes which is (32 chars) not more that 32 and not more that 32 â€¢")
+}
+         const bufferKey = Buffer.from(key,'hex');
+         const bufferIv = Buffer.from(iv,'hex');
+  const cipher = crypto.createCipheriv("aes-256-cbc",bufferKey,bufferIv);
+     
+     let encryption = cipher.update(value,"utf8","hex");
+     encryption += cipher.final("hex");
+      return sendSuccess(res,200,encryption)
+     }catch(err){
+         saveErrorLog(req,err)
+         return sendError(res,500,"An error occured while encrypting your data. please try again later after the fix.")
+         
+}
+  })
+}
+
+
+// decrypt developing next is Decryption
+const startDecryption = (app)=>{
+ app.get("/cyphers/decryption",async(req,res)=>{
+     try{
+   const { key, iv, hex } = req.query;
+     if(!key){
+return sendError(res,400,"The same key for the encryption os required");
+     };
+     if(!iv){
+ return sendError(res,400,"The same IV used for the encryption is required to ecryption accuretely");
+ };
+     if(!hex){
+ return sendError(res,400,"The body or value to decrypt was not given. please recheck the URL")
+}
+    if(key.length !== 64){
+ return sendError(res,400,"The key hex should be exactly 64 chars which is 32 bytes");
+}
+     if(iv.length !== 32){
+ return sendError(res,400,"The iv should be exactly 32 chars which is 16 bytes");
+     };
+      const newKey = Buffer.from(key,"hex");
+        const newIv = Buffer.from(iv,"hex");
+         const Body = hex;
+     const deCipher = await crypto.createDecipheriv("aes-256-cbc",newKey,newIv);
+         if(!deCipher.ok){
+             return sendError(res,500,"Am error was encountered while decrypting")
+         }
+     let decrypted = await deCipher.update(Body,"hex","utf8");
+      decrypted += deCipher.final("utf8");
+    return sendSuccess(res,200,decrypted,"Decryption",hex)
+     }catch(err){
+ saveErrorLog(req,err);
+}
+ })
+}
+
+
+
+
+
+
+
+
+const gpt4Route = (app)=>{
+   
+ app.get("/cyphers/gpt4",async(req,res)=>{
+     try{
+ const { prompt } = req.query;
+     if(!prompt){
+ return sendError(res,400,"Your request body is required");
+};
+         const validatedMessage =  encodeURIComponent(prompt).replace(/%20/g,"+");
+        
+         
+     const fetchGpt4 = await fetch(`https://jerrycoder.oggyapi.workers.dev/ai/gpt4?prompt=${validatedMessage}&model=5`,{method:"GET", headers : { "Content-Type":"application/json"}});
+     const gpt4Info = await fetchGpt4.json();
+const theMessage = gpt4Info.reply.message;
+        
+         
+         const deny = ["ChatGPT", "Assistant", "OpenAI"];
+
+let cleanMessage = theMessage;
+deny.forEach(word => {
+   cleanMessage =
+   cleanMessage.replaceAll(word, "Cyphers");
+});
+
+return sendSuccess(res, 200, cleanMessage);
+   
+     }catch(err){
+         saveErrorLog(req,err);
+     }
+  })
+}
+
+// uncensored AiRpute
+const veniceUncensoredAi = (app)=>{
+ app.get("/cyphers/veniceUncensored",async(req,res)=>{
+     try{
+  const { prompt } = req.query;
+     if(!prompt){
+ return sendError(res,400,"The prompt is required to get a response");
+}
+     const  aiRequest = await fetch(`https://api-silentbyte-platforms-inc.zone.id/api/venicechat?message=${encodeURIComponent(prompt).replace(/%20/g,"+")}`);
+         if(!aiRequest.ok){
+ return sendError(res,500,"request failed with statusCode 429, Yo, nigga you like too many uncensored information .Try again later.")
+}                
+         const aiResponse = await aiRequest.json();
+         return sendSuccess(res,200,aiResponse.result,"Uncensored AI",prompt);
+         
+         
+     }catch(err){ saveErrorLog(req,err) };
+ })
+
+};
+
+
+
+//song Lyrics route
+const lyrics = (app)=>{
+app.get("/cyphers/songLyrics",async(req,res)=>{
+    try{
+       
+ const { song } = req.query;
+    if(!song){
+        return sendError(res,400,"The song  name is required to get a response");
+    };
+    const songRequest = await fetch(`https://api-silentbyte-platforms-inc.zone.id/api/lyrics?q=${encodeURIComponent(song)}`, { method:"GET"});
+    const songResponse = await songRequest.json();
+    return sendSuccess(res,200,songResponse.result,"song Lyrics",songName)
+    }catch(err){ saveErrorLog(req,err) }
+ });
+  
+}
+
+
+
+
 
 
 
@@ -586,7 +972,6 @@ export {
     apiWorking,
     Ping,
     PreviewImg,
-    Email,
     getPort,
     logDir,
     GitHub,
@@ -599,6 +984,19 @@ export {
     logInPOST,
     logInGET,
     User,
-    resetPassword
+    resetPassword,
+    blockUser,
+    VerifyEmail,
+    VerifyEmailPost,
+    sendCode,
+    encryptionRoute,
+    startEncryption,
+    gpt4Route,
+    veniceUncensoredAi,
+    availableRoutes,
+    lyrics,
+    startDecryption
           
 };
+
+// All right reserved | 2026 cybercyphers
