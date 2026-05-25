@@ -1,16 +1,14 @@
 // import modules.
 import { exec } from 'child_process'
 import db from './Main/SQL.js';
-import Watch from './watch.js'
 import fetch from 'node-fetch'
 import express from 'express'; 
 import fs from 'fs';
 import { fileURLToPath } from 'url'; 
-import path from 'path';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename)
+import path,{ join,dirname } from 'path';
+const __dirname = dirname(fileURLToPath( import.meta.url)) 
 import Database from 'better-sqlite3';
-import cors from 'cors';
+import cors from 'cors'; 
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
@@ -23,13 +21,16 @@ import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import xssClean from 'xss-clean';
 import ExpressBrute from 'express-brute';
+import nodemailer from 'nodemailer';
+import { createServer } from 'node:http';
+import { Server } from 'socket.io'
+import morgan from 'morgan';
 
 import {
     ipRoute,
     apiWorking,
     Ping,
     PreviewImg,
-    Email,
     getPort,
     logDir,
     GitHub,
@@ -42,13 +43,24 @@ import {
     logInPOST,
     logInGET,
     User,
-    resetPassword
+    resetPassword,
+    blockUser,
+    VerifyEmail,
+    VerifyEmailPost,
+    sendCode,
+    encryptionRoute,
+    startEncryption,
+    gpt4Route,
+    veniceUncensoredAi,
+    availableRoutes,
+    lyrics,
+    startDecryption
        } from './Main/cyphers.js';
 
 const SQLiteStore = connectSql(session)
 // module import end
 
-/*exec("npm update connect-sqlite3 npm audit",(err,stdout,stderr)=>{
+/*exec("npm install -g npm@11.15.0",(err,stdout,stderr)=>{
   if(err){
    console.log(err)
 } 
@@ -65,21 +77,26 @@ const SQLiteStore = connectSql(session)
 // execute import if any, only packages.
 
 const app = express();
-app.use(cors({
-origin : ["https://panel-cyphers.nett.to/cyphers"],
-    credentials : true
-}))
+const server = createServer(app);
+const io = new Server(server);
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended : true}));
 app.use(express.static(path.join(__dirname,"Front_End")))
 app.use(express.static(path.join(__dirname,"Front_End","CSS")));
 app.use(cookieParser());
 app.set("trust proxy",10);
-app.set("json spaces",2.4);
+app.set("json spaces",3.5);
 app.use(compression())
 app.use(hpp())
 app.use(mongoSanitize())
 app.use(xssClean())
+app.use(morgan("dev"))
+
+// socket.io initialization
+io.on("connection",(socket)=>{
+  console.log("test successful")
+})
 
 
 
@@ -92,6 +109,81 @@ const bruteforce = new ExpressBrute(store, {
   lifetime: 60
 });
 const brutePrevent = bruteforce.prevent;
+
+
+
+//Success email sending
+async function sendCreatedEmail(user){
+const transport = await nodemailer.createTransport({
+ service : "gmail",
+    auth:{
+ user :`cybercyphers2008@gmail.com`,
+ pass :"soffaocxotpclrts"
+  }
+});
+    const information = transport.sendMail({
+    from : "cyphers-Api",
+        to:`${user}`,
+        subject : "Account created successfully on Cypher-Api",
+        html : `<p>Account created successfully for ${user} </p>`
+  })
+    console.log("Email send successfully")
+}
+
+
+
+
+async function sendEmailCode(user){
+   
+   const transporter = nodemailer.createTransport({
+    service:"gmail",
+   auth:{
+         user:"cybercyphers2008@gmail.com",
+         pass:"soffaocxotpclrts"
+     }
+  })
+   const getCode=1000+ Math.random()*9657
+   const code = Math.round(getCode)
+   const sendCode = await transporter.sendMail({
+   from:"Cypher-Api",
+       to :`${user}`,
+       subject :"Email Verification Code From Cypher-Api ",
+       html: `
+<div style="
+width:100%;
+text-align:center;
+padding:30px 0;
+background-color:#f5f5f5;
+">
+
+  <div style="
+  display:inline-block;
+  width:300px;
+  height:100px;
+  line-height:100px;
+  background-color:thistle;
+  border-radius:20px;
+  font-size:28px;
+  font-weight:bold;
+  color:black;
+  ">
+
+    Your Code is ${code}
+
+  </div>
+
+</div>
+`
+
+
+   })
+   return code;
+}
+
+
+
+
+
 
 
 
@@ -387,7 +479,7 @@ function waf(config = {}) {
         /\$\([^)]+\)/,
         /&&\s*\b(cat|ls|rm|wget|curl|nc|ping)\b/i,
         /\|\|\s*\b(cat|ls|rm)\b/i,
-        /%(.){2}/,
+       
         
         // File operations
         /\bcat\s+\/etc\//i,
@@ -743,17 +835,17 @@ function waf(config = {}) {
     // Log the attack
   
 console.log(`
-\x1b[1;31mâ•­â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•®
-â”‚     â›” ATTACK BLOCKED FROM DATABASE â›”                    â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ Attack  : \x1b[33m${attackType.padEnd(42)}\x1b[31mâ”‚
-â”‚ IP      : \x1b[36m${(req.ip || "Unknown").padEnd(42)}\x1b[31mâ”‚
-â”‚ Path    : \x1b[32m${(req.path || "/").padEnd(42)}\x1b[31mâ”‚
-â”‚ Method  : \x1b[35m${(req.method || "Unknown").padEnd(42)}\x1b[31mâ”‚
-â”‚ Pattern : \x1b[33m${pattern.toString().slice(0,42).padEnd(42)}\x1b[31mâ”‚
-â”‚ Time    : \x1b[37m${new Date().toISOString().padEnd(42)}\x1b[31mâ”‚
-â”‚ User    : \x1b[34m${String(req.user?.id || "Guest").padEnd(42)}\x1b[31mâ”‚
-â•°â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•¯
+\x1b[1;31mâ­âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ®
+â     â ATTACK BLOCKED FROM DATABASE â                    â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ¤
+â Attack  : \x1b[33m${attackType.padEnd(42)}\x1b[31mâ
+â IP      : \x1b[36m${(req.ip || "Unknown").padEnd(42)}\x1b[31mâ
+â Path    : \x1b[32m${(req.path || "/").padEnd(42)}\x1b[31mâ
+â Method  : \x1b[35m${(req.method || "Unknown").padEnd(42)}\x1b[31mâ
+â Pattern : \x1b[33m${pattern.toString().slice(0,42).padEnd(42)}\x1b[31mâ
+â Time    : \x1b[37m${new Date().toISOString().padEnd(42)}\x1b[31mâ
+â User    : \x1b[34m${String(req.user?.id || "Guest").padEnd(42)}\x1b[31mâ
+â°âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ¯
 \x1b[0m
 `);
       
@@ -817,7 +909,7 @@ app.use(helmet({ contentSecurityPolicy:false }))
  
 //Rate limiting too many requests 
   app.use(rateLimit({
-      windowMs : 1000 * 60,
+      windowMs : 1000 * 60 * 5,
       max : 60,
       message : (["Too many request within the range of 1(one) minute. Please try again after a minutes"])
 })
@@ -877,7 +969,7 @@ function checkBlocked(req,res,next){
 //-- ----------------------------------------
 
 
-function saveErrorLog(req,err){
+async function saveErrorLog(req,err){
   try{
     const homeDir = os.homedir();
     const errorPath = path.join(homeDir, "serverErrors");
@@ -897,7 +989,24 @@ function saveErrorLog(req,err){
       errorFile,
       "\n" + (err.stack || err.toString() || err.message) + "\n\n"
     );
-      console.log(`\n\x1b[31mÃƒÂ¢Ã…Â¡ ÃƒÂ¯Ã‚Â¸Ã‚Â A User encounted an Error on path:\x1b[1;36m${req.path}\x1b[0m\x1b[31m, and time ${new Date().toISOString()},  please check logs for details\x1b[0m\n`)
+      const theError = `\n\x1b[31m A User encounted an Error on path:\x1b[1;36m${req.path}\x1b[0m\x1b[31m, and time ${new Date().toISOString()},  please check logs for details\x1b[0m\n`
+console.log(theError)
+      
+      const transport = nodemailer.createTransport({
+ service : "gmail",
+          auth:{
+      user:"cybercyphers2008@gmail.com",
+              pass:"soffaocxotpclrts"
+}
+
+          
+})
+                const send = await transport.sendMail({
+    from : "Cypher-Api-Errors",
+                    to : "edufiaaflasamuel@gmail.com",
+                    subject : "ErrorLogs",
+                    html : `<div>${theError}</div>`
+})
 
   }catch(err){
     console.log("could not save error to file:", err);
@@ -924,8 +1033,7 @@ app.use(session({
     sameSite : "strict",
       secure : true,
       maxAge : 1000 * 60 * 60 * 24 * 7
-  },
-    unset : "destroy"
+  }
 }))
 
 
@@ -933,7 +1041,6 @@ ipRoute(app)
 apiWorking(app)
 Ping(app)
 PreviewImg(app)
-Email(app)
 GitHub(app)
 totalRequests(app)
 About(app)
@@ -944,7 +1051,17 @@ logInPOST(app)
 logInGET(app)
 User(app)
 resetPassword(app)
-
+blockUser(app)
+VerifyEmail(app)
+VerifyEmailPost(app)
+sendCode(app)
+encryptionRoute(app)
+startEncryption(app)
+gpt4Route(app)
+veniceUncensoredAi(app)
+availableRoutes(app)
+lyrics(app)
+startDecryption(app)
 
 app.get("/cyphers/browserId",(req,res)=>{
  res.json({ message : req.fingerprint })
@@ -988,6 +1105,19 @@ app.use((req,res)=>{
 })
 
 
+app.use((req,res,next)=>{
+ if(!req.session.user) return next();
+  
+ const databaseBlockCheckUser=sdb.prepare("SELECT isBlocked FROM signups WHERE signup_username =?").get(req.session.user);
+    if(databaseBlockCheckUser.isBlocked === true || databaseBlockCheckUser === 1){
+        req.session.destroy(()=>{
+    return sendError(res,403,"You have been logged out please contact support");
+        })
+        return;
+    }
+    next()
+});
+
 //-------------------------------------------
 
 // Port to listen on
@@ -996,5 +1126,9 @@ app.listen(`${getPort()}`,"::",()=>{
 })
 
 
-export { saveErrorLog }
+export { 
+    saveErrorLog,
+    sendCreatedEmail,
+    sendEmailCode 
+}
 // EOF
