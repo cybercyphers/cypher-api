@@ -2,17 +2,19 @@
     "name": "Cypher-Api",
     "Developer": "Cyber Cyphers",
     "version": "1.0.0",
+    "live": true,
     "description": "An api web where developers meet and make fetch simple",
     "web": "https://panel-cyphers.nett.to/cyphers/",
     "main": "./Main/cyphers.js",
     "scripts": {
         "start": "node index.js",
-        "stop": "p-kill index.js"
+        "stop": "p-kill node"
     },
     "type": "module",
     "dependencies": {
+        "axios": "^1.16.1",
         "bcrypt": "^6.0.0",
-        "better-sqlite3": "^12.9.0",
+        "better-sqlite3": "^9.6.0",
         "chalk": "^4.1.2",
         "chokidar": "^5.0.0",
         "compression": "^1.8.1",
@@ -20,21 +22,31 @@
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.6",
         "crypto": "^1.0.1",
+        "dns": "^0.2.2",
         "express": "^4.22.1",
         "express-brute": "^1.0.1",
         "express-mongo-sanitize": "^2.2.0",
         "express-rate-limit": "^8.0.0",
         "express-session": "^1.19.0",
         "express-waf": "^0.1.6",
+        "figlet": "^1.11.0",
         "helmet": "^8.1.0",
         "hpp": "^0.2.3",
         "morgan": "^1.10.1",
         "node-fetch": "^3.3.2",
+        "nodemailer": "^8.0.7",
+        "npm": "^11.15.0",
         "xss-clean": "^0.1.4"
     },
     "author": "Cyber Cyphers",
     "lincense": "MIT",
     "engines": {
-        "node": ">=18"
+        "node": ">=19"
+    },
+    "allowScripts": {
+        "bcrypt@6.0.0": true,
+        "better-sqlite3@9.6.0": true,
+        "sqlite3@5.1.7": true,
+        "ws@0.4.31": true
     }
 }
